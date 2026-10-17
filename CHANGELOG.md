@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2026-10-17)
+
+
+### Bug Fixes
+
+* init ([9d74520](https://github.com/soerenschneider/sc-test/commit/9d745207156e3cf35570d23da4f2a3bfc27187fb))
+
 ## [1.11.0](https://github.com/soerenschneider/sc/compare/v1.10.0...v1.11.0) (2026-08-30)
 
 
