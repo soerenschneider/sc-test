@@ -3,11 +3,17 @@ on:
   push:
     branches:
       - main
+  # Rebuilds the binaries and container image of an existing release, e.g.
+  # after a failed run. Only runs from main produce trusted signatures.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of the existing release to rebuild
+        required: true
+        type: string
 
 permissions:
-  contents: write
-  pull-requests: write
-  packages: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -18,21 +24,52 @@ name: release
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      # empty if nothing is to be released
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v5.0.0
         name: release
         id: release
+        if: ${{ github.event_name == 'push' }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: simple
           package-name: ${{ github.repository }}
 
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            gh release view "$INPUT_TAG" -R "$REPO" > /dev/null
+            echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
+          elif [ "$RELEASE_CREATED" = "true" ]; then
+            echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+
+  # independent of the binaries, so a failing image push does not block them
+  container:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.tag != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
-        if: ${{ steps.release.outputs.release_created }}
+        with:
+          ref: ${{ needs.release-please.outputs.tag }}
 
       - name: Log in to the container registry
         uses: docker/login-action@v4.6.0
@@ -40,7 +77,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ steps.release.outputs.release_created }}
 
       - name: Extract metadata for container
         id: meta
@@ -48,8 +84,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=v${{steps.release.outputs.major }}.${{steps.release.outputs.minor }}.${{steps.release.outputs.patch }}
-        if: ${{ steps.release.outputs.release_created }}
+            type=semver,pattern={{version}},value=${{ needs.release-please.outputs.tag }}
 
       - name: Build and push container image
         uses: docker/build-push-action@v7.4.0
@@ -58,7 +93,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-        if: ${{ steps.release.outputs.release_created }}
 
   # Releases created with GITHUB_TOKEN do not trigger other workflows, so the
   # binaries are built and published here. sc trusts the keyless signature of
@@ -66,7 +100,7 @@ jobs:
   # rename it or move these jobs elsewhere.
   build:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release_created }}
+    if: ${{ needs.release-please.outputs.tag != '' }}
     permissions:
       contents: read
     strategy:
@@ -81,7 +115,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
+          ref: ${{ needs.release-please.outputs.tag }}
 
       - uses: actions/setup-go@v7
         with:
@@ -91,7 +125,7 @@ jobs:
         run: make "$TARGET" VERSION="$TAG"
         env:
           TARGET: ${{ matrix.target }}
-          TAG: ${{ needs.release-please.outputs.tag_name }}
+          TAG: ${{ needs.release-please.outputs.tag }}
 
       - uses: actions/upload-artifact@v7.0.2
         with:
@@ -109,7 +143,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
+          ref: ${{ needs.release-please.outputs.tag }}
 
       - uses: actions/download-artifact@v8.0.2
         with:
@@ -120,7 +154,7 @@ jobs:
       - name: Create checksums
         run: make checksums VERSION="$TAG"
         env:
-          TAG: ${{ needs.release-please.outputs.tag_name }}
+          TAG: ${{ needs.release-please.outputs.tag }}
 
       - uses: sigstore/cosign-installer@v4.1.2
 
@@ -132,4 +166,4 @@ jobs:
         run: gh release upload "$TAG" builds/sc-* builds/checksum.sha256 builds/checksum.sha256.sigstore.json --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.release-please.outputs.tag_name }}
+          TAG: ${{ needs.release-please.outputs.tag }}

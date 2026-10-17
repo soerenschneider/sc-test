@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	Repository = "github.com/soerenschneider/sc"
+	Repository = "github.com/soerenschneider/sc-test"
 
 	binaryName    = "sc"
 	checksumAsset = "checksum.sha256"
