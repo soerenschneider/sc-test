@@ -5,6 +5,7 @@ CHECKSUM_FILE = $(BUILD_DIR)/checksum.sha256
 SIGNIFY_KEYFILE = ~/.signify/github.sec
 SIGNIFY_PASS_ENTRY = keys/signify/github
 
+
 # cosign key pair to sign with. If empty, cosign signs keyless, which sc only
 # trusts when done by the release workflow, so that is restricted to CI.
 COSIGN_KEY ?=
