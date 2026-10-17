@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/soerenschneider/sc-test/compare/v1.0.1...v1.0.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* blawq ([57dd6b4](https://github.com/soerenschneider/sc-test/commit/57dd6b4e3cb59992f2989cfae28c66ccbc78e157))
+
 ## [1.0.1](https://github.com/soerenschneider/sc-test/compare/v1.0.0...v1.0.1) (2026-10-17)
 
 
