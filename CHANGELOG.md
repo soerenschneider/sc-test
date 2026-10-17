@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/soerenschneider/sc-test/compare/v1.0.0...v1.0.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* bump ([938dc63](https://github.com/soerenschneider/sc-test/commit/938dc632323e40527d9cd5f58348536566601941))
+
 ## 1.0.0 (2026-10-17)
 
 
