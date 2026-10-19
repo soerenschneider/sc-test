@@ -31,7 +31,7 @@ require (
 	github.com/yeqown/go-qrcode/writer/terminal v1.1.3
 	github.com/zalando/go-keyring v0.2.8
 	go.uber.org/multierr v1.11.0
-	golang.design/x/clipboard v0.9.0
+	golang.design/x/clipboard v0.11.0
 	golang.org/x/crypto v0.55.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sys v0.47.0
