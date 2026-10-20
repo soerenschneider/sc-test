@@ -2,7 +2,7 @@ module github.com/soerenschneider/sc
 
 go 1.26.0
 
-toolchain go1.27.0
+toolchain go1.27.3
 
 require (
 	charm.land/bubbles/v2 v2.2.1
