@@ -1,6 +1,6 @@
 module github.com/soerenschneider/sc
 
-go 1.26.0
+go 1.26.7
 
 toolchain go1.27.0
 
@@ -8,7 +8,7 @@ require (
 	charm.land/bubbles/v2 v2.2.1
 	charm.land/bubbletea/v2 v2.0.9
 	charm.land/huh/v2 v2.0.3
-	charm.land/lipgloss/v2 v2.0.6
+	charm.land/lipgloss/v2 v2.1.0
 	github.com/coreos/go-oidc/v3 v3.20.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-playground/validator/v10 v10.30.3
