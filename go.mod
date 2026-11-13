@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/vault/api v1.23.0
 	github.com/hashicorp/vault/api/auth/approle v0.12.0
-	github.com/jedib0t/go-pretty/v6 v6.8.3
+	github.com/jedib0t/go-pretty/v6 v6.9.1
 	github.com/keybase/go-keychain v0.0.1
 	github.com/liyue201/goqr v0.0.0-20200803022322-df443203d4ea
 	github.com/mdp/qrterminal/v3 v3.2.1
